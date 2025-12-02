@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ragbook - Documentation Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            padding: 4rem 0;
+            color: white;
+        }
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        .card a {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #764ba2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .card a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Ragbook</h1>
+            <p>Axum-powered documentation server with markdown rendering</p>
+        </header>
+        
+        <div class="card-grid">
+            <div class="card">
+                <h2>📖 Documentation</h2>
+                <p>Browse the project documentation rendered from markdown files.</p>
+                <a href="/docs/getting-started.md">Getting Started →</a>
+            </div>
+            
+            <div class="card">
+                <h2>🔧 API Reference</h2>
+                <p>Explore the API endpoints and usage examples.</p>
+                <a href="/docs/api.md">View API Docs →</a>
+            </div>
+            
+            <div class="card">
+                <h2>❤️ Health Check</h2>
+                <p>Verify the server status and health.</p>
+                <a href="/health">Check Health →</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built with Rust 🦀 and Axum</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+[package]
+name = "ragbook"
+version = "0.1.0"
+edition = "2021"
+description = "Axum-based documentation server with markdown rendering"
+license = "MIT"
+repository = "https://github.com/ggwazi/ragbook"
+
+[dependencies]
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+pulldown-cmark = "0.10"
+tower-http = { version = "0.5", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tower = { version = "0.4", features = ["util"] }
+http-body-util = "0.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
