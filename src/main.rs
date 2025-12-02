@@ -65,7 +65,7 @@ async fn health_handler() -> impl IntoResponse {
 async fn docs_handler(Path(path): Path<String>) -> impl IntoResponse {
     let docs_path = format!("docs/{}", path);
 
-    match std::fs::read_to_string(&docs_path) {
+    match tokio::fs::read_to_string(&docs_path).await {
         Ok(content) => {
             let html_content = markdown::render_markdown(&content);
             let page = format!(
