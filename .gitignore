@@ -1,0 +1,24 @@
+# Rust build artifacts
+/target/
+Cargo.lock
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+tarpaulin-report.html
+*.profraw
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
