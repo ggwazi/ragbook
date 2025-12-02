@@ -58,10 +58,8 @@ The markdown renderer supports:
 
 Returned when a requested document doesn't exist.
 
-```json
-{
-  "error": "Document Not Found"
-}
+```html
+<h1>404 - Document Not Found</h1>
 ```
 
 ## Examples

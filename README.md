@@ -26,6 +26,12 @@ cargo run
 ./scripts/run.sh
 ```
 
+**Note:** If you see a "Permission denied" error when running `./scripts/run.sh`, you may need to make the scripts executable first:
+
+```bash
+chmod +x scripts/*.sh
+```
+
 The server will start at `http://localhost:3000`.
 
 ## Development

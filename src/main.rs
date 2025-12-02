@@ -8,6 +8,7 @@ use axum::{
     Router,
 };
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use tokio::net::TcpListener;
 use tower_http::{services::ServeDir, trace::TraceLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -63,9 +64,43 @@ async fn health_handler() -> impl IntoResponse {
 
 /// Documentation page handler - renders markdown files
 async fn docs_handler(Path(path): Path<String>) -> impl IntoResponse {
-    let docs_path = format!("docs/{}", path);
+    // Validate path to prevent directory traversal attacks
+    let docs_dir = PathBuf::from("docs");
+    let requested_path = docs_dir.join(&path);
 
-    match tokio::fs::read_to_string(&docs_path).await {
+    // Canonicalize both paths to resolve any ".." or symlinks
+    let docs_dir_canonical = match docs_dir.canonicalize() {
+        Ok(p) => p,
+        Err(e) => {
+            tracing::error!("Failed to canonicalize docs directory: {}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Html("<h1>500 - Internal Server Error</h1>".to_string()),
+            );
+        }
+    };
+
+    let requested_path_canonical = match requested_path.canonicalize() {
+        Ok(p) => p,
+        Err(e) => {
+            tracing::warn!("Document not found or invalid path '{}': {}", path, e);
+            return (
+                StatusCode::NOT_FOUND,
+                Html("<h1>404 - Document Not Found</h1>".to_string()),
+            );
+        }
+    };
+
+    // Ensure the requested path is within the docs directory
+    if !requested_path_canonical.starts_with(&docs_dir_canonical) {
+        tracing::warn!("Path traversal attempt detected: {}", path);
+        return (
+            StatusCode::FORBIDDEN,
+            Html("<h1>403 - Forbidden</h1>".to_string()),
+        );
+    }
+
+    match tokio::fs::read_to_string(&requested_path_canonical).await {
         Ok(content) => {
             let html_content = markdown::render_markdown(&content);
             let page = format!(
@@ -92,10 +127,13 @@ async fn docs_handler(Path(path): Path<String>) -> impl IntoResponse {
             );
             (StatusCode::OK, Html(page))
         }
-        Err(_) => (
-            StatusCode::NOT_FOUND,
-            Html("<h1>404 - Document Not Found</h1>".to_string()),
-        ),
+        Err(e) => {
+            tracing::error!("Failed to read document '{}': {}", path, e);
+            (
+                StatusCode::NOT_FOUND,
+                Html("<h1>404 - Document Not Found</h1>".to_string()),
+            )
+        }
     }
 }
 
@@ -133,5 +171,57 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn test_docs_handler_existing_file() {
+        let app = create_router();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/docs/getting-started.md")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn test_docs_handler_nonexistent_file() {
+        let app = create_router();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/docs/nonexistent.md")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn test_docs_handler_path_traversal_blocked() {
+        let app = create_router();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/docs/../Cargo.toml")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        // Path traversal should be blocked - either 404 (path doesn't resolve) or 403 (forbidden)
+        assert!(
+            response.status() == StatusCode::NOT_FOUND
+                || response.status() == StatusCode::FORBIDDEN
+        );
     }
 }

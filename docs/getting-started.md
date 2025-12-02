@@ -61,4 +61,3 @@ RUST_LOG=debug cargo run
 ## Next Steps
 
 - [API Reference](api.md)
-- [Contributing Guide](contributing.md)
